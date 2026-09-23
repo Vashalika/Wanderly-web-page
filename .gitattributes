@@ -1,2 +1,11 @@
-# Auto detect text files and perform LF normalization
+# OS files
+.DS_Store
+Thumbs.db
+
+# VS Code settings
+.vscode/
+
+# Temporary files
+*.tmp
+*.log# Auto detect text files and perform LF normalization
 * text=auto
