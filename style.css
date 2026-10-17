@@ -1828,3 +1828,130 @@ body {
     }
 
 }
+/* ==========================================
+   WANDERLY - JAVASCRIPT UI STYLES
+========================================== */
+
+/* Search inputs */
+.destination-input,
+.travel-type-select {
+    width: 100%;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid rgba(0, 201, 167, 0.45);
+    border-radius: 8px;
+    outline: none;
+    background: #ffffff;
+    color: #17324d;
+    font: inherit;
+}
+
+.destination-input:focus,
+.travel-type-select:focus {
+    border-color: #00c9a7;
+    box-shadow: 0 0 0 3px rgba(0, 201, 167, 0.15);
+}
+
+/* Back-to-top button */
+.back-to-top {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 999;
+    width: 46px;
+    height: 46px;
+    border: none;
+    border-radius: 50%;
+    background: #00c9a7;
+    color: #ffffff;
+    font-size: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(12px);
+    transition: all 0.3s ease;
+}
+
+.back-to-top.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.back-to-top:hover {
+    background: #ffffff;
+    color: #007c6c;
+    transform: translateY(-4px);
+}
+
+/* Scroll reveal */
+.reveal {
+    opacity: 0;
+    transform: translateY(25px);
+    transition: opacity 0.65s ease, transform 0.65s ease;
+}
+
+.reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Mobile navigation */
+.menu-toggle {
+    display: none;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 7px 12px;
+    background: transparent;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        position: sticky;
+    }
+
+    .navbar .menu-toggle {
+        display: block;
+    }
+
+    .navbar .nav-links {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+        padding: 18px;
+        background: #0b1724;
+        border-radius: 12px;
+    }
+
+    .navbar .nav-links.menu-open {
+        display: flex;
+    }
+
+    .navbar {
+        flex-wrap: wrap;
+    }
+
+    .navbar .nav-links a {
+        display: block;
+        padding: 8px;
+    }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .reveal,
+    .back-to-top {
+        transition: none;
+    }
+
+    html {
+        scroll-behavior: auto;
+    }
+}
