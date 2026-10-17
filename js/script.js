@@ -2,15 +2,18 @@ document.addEventListener("DOMContentLoaded", () => {
     "use strict";
 
     // =========================================
-    // WANDERLY - ADVANCED WEBSITE JAVASCRIPT
+    // WANDERLY - PART A
+    // Setup, Destination Data and Search
     // =========================================
 
+    // 1. Helper Functions
     const $ = (selector, parent = document) =>
         parent.querySelector(selector);
 
     const $$ = (selector, parent = document) =>
         [...parent.querySelectorAll(selector)];
 
+    // 2. Destination Data
     const destinations = [
         {
             name: "Manali",
@@ -50,10 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     ];
 
-    // =========================================
-    // 1. NOTIFICATION / TOAST MESSAGES
-    // =========================================
-
+    // 3. Toast Notification
     let toastTimer;
 
     function toast(message, type = "success") {
@@ -78,21 +78,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 3200);
     }
 
-    // =========================================
-    // 2. DYNAMIC DESTINATION SEARCH
-    // =========================================
-
+    // 4. Hero Search Elements
     const searchBox = $(".hero-search");
     const searchItems = $$(".search-item", searchBox || document);
 
     let destinationInput;
     let travelTypeSelect;
 
+    // 5. Destination Search Input
     if (searchBox && searchItems[0]) {
         const oldText = $("p", searchItems[0]);
 
         if (oldText) {
             destinationInput = document.createElement("input");
+
             destinationInput.type = "text";
             destinationInput.className = "destination-input";
             destinationInput.placeholder = "Where do you want to go?";
@@ -100,40 +99,47 @@ document.addEventListener("DOMContentLoaded", () => {
                 "aria-label",
                 "Search for a destination"
             );
-            destinationInput.setAttribute("list", "wanderly-suggestions");
+            destinationInput.setAttribute(
+                "list",
+                "wanderly-suggestions"
+            );
 
-            const list = document.createElement("datalist");
-            list.id = "wanderly-suggestions";
+            const suggestionList = document.createElement("datalist");
+            suggestionList.id = "wanderly-suggestions";
 
             destinations.forEach(place => {
                 const option = document.createElement("option");
                 option.value = place.name;
-                list.appendChild(option);
+                suggestionList.appendChild(option);
             });
 
             oldText.replaceWith(destinationInput);
-            searchItems[0].appendChild(list);
+            searchItems[0].appendChild(suggestionList);
         }
     }
 
+    // 6. Travel Type Dropdown
     if (searchBox && searchItems[1]) {
         const oldText = $("p", searchItems[1]);
 
         if (oldText) {
             travelTypeSelect = document.createElement("select");
+
             travelTypeSelect.className = "travel-type-select";
             travelTypeSelect.setAttribute(
                 "aria-label",
                 "Choose a travel category"
             );
 
-            [
+            const travelTypes = [
                 ["all", "All Travel Types"],
                 ["mountains", "Mountains"],
                 ["beach", "Beach"],
                 ["nature", "Nature"],
                 ["heritage", "Heritage"]
-            ].forEach(([value, label]) => {
+            ];
+
+            travelTypes.forEach(([value, label]) => {
                 const option = document.createElement("option");
                 option.value = value;
                 option.textContent = label;
@@ -144,22 +150,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // =========================================
-    // 3. FILTER DESTINATIONS AND PACKAGES
-    // =========================================
-
+    // 7. Save Common Elements for Part B
     const destinationSection = $("#destinations");
     const destinationCards = $$(".destination-card");
     const packageCards = $$(".package-card");
+    const exploreButton = $(".explore-btn");
 
+    // Find destination data using a card's heading
     function getPlaceFromCard(card) {
-        const name = $("h3", card)?.textContent.trim();
+        const name = $("h3", card)?.textContent.trim() || "";
 
         return destinations.find(place =>
-            place.name.toLowerCase() === (name || "").toLowerCase()
+            place.name.toLowerCase() === name.toLowerCase()
         );
     }
+    // =========================================
+    // PART B: FILTERING AND DESTINATION DETAILS
+    // =========================================
 
+    // 1. Filter destinations and packages
     function filterResults() {
         const query = (destinationInput?.value || "")
             .trim()
@@ -170,7 +179,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         destinationCards.forEach(card => {
             const place = getPlaceFromCard(card);
-
             const name = $("h3", card)?.textContent.trim() || "";
 
             const matchesName =
@@ -181,7 +189,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 place?.type === selectedType;
 
             const visible = matchesName && matchesType;
-
             card.hidden = !visible;
 
             if (visible) destinationCount++;
@@ -197,7 +204,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const matchesName =
                 !query ||
                 title.toLowerCase().includes(query) ||
-                place?.name.toLowerCase().includes(query);
+                (place && place.name.toLowerCase().includes(query));
 
             const matchesType =
                 selectedType === "all" ||
@@ -216,19 +223,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (resultMessage) {
-            resultMessage.textContent = query || selectedType !== "all"
-                ? `${destinationCount} destination(s) found.`
-                : "";
+            resultMessage.textContent =
+                query || selectedType !== "all"
+                    ? `${destinationCount} destination(s) found.`
+                    : "";
         }
 
         return destinationCount;
     }
 
+    // Update results as the user types or changes travel type
     destinationInput?.addEventListener("input", filterResults);
     travelTypeSelect?.addEventListener("change", filterResults);
 
-    const exploreButton = $(".explore-btn");
-
+    // Explore button
     exploreButton?.addEventListener("click", () => {
         const query = (destinationInput?.value || "").trim();
         const count = filterResults();
@@ -244,12 +252,13 @@ document.addEventListener("DOMContentLoaded", () => {
             toast(
                 query
                     ? "Destination not found. Try Manali, Goa, Kashmir or Jaipur."
-                    : "Please choose a destination or travel type.",
+                    : "No matching destination found. Try another travel type.",
                 "error"
             );
         }
     });
 
+    // Press Enter to search
     destinationInput?.addEventListener("keydown", event => {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -257,10 +266,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // =========================================
-    // 4. DESTINATION DETAILS POPUP
-    // =========================================
-
+    // 2. Popup functions
     function closeModal() {
         $(".wanderly-modal")?.remove();
         document.body.classList.remove("modal-open");
@@ -299,20 +305,29 @@ document.addEventListener("DOMContentLoaded", () => {
         closeButton.addEventListener("click", closeModal);
 
         modal.addEventListener("click", event => {
-            if (event.target === modal) closeModal();
+            if (event.target === modal) {
+                closeModal();
+            }
         });
 
         closeButton.focus();
     }
 
+    // Close popup with Escape key
     document.addEventListener("keydown", event => {
-        if (event.key === "Escape") closeModal();
+        if (event.key === "Escape") {
+            closeModal();
+        }
     });
 
+    // 3. Add View Details buttons to destination cards
     destinationCards.forEach(card => {
         const place = getPlaceFromCard(card);
 
         if (!place) return;
+
+        // Prevent duplicate buttons if this code is initialized again
+        if ($(".destination-details-btn", card)) return;
 
         const button = document.createElement("button");
         button.type = "button";
@@ -323,7 +338,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const content = document.createElement("div");
 
             const region = document.createElement("p");
-            region.textContent = place.region;
+            region.textContent = `Region: ${place.region}`;
 
             const description = document.createElement("p");
             description.textContent = place.description;
@@ -342,25 +357,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
             action.addEventListener("click", () => {
                 closeModal();
-                $("#packages")?.scrollIntoView({ behavior: "smooth" });
+                $("#packages")?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
             });
 
-            content.append(region, description, duration, price, action);
+            content.append(
+                region,
+                description,
+                duration,
+                price,
+                action
+            );
+
             openModal(`${place.name} Travel Guide`, content);
         });
 
         card.appendChild(button);
     });
-
+// =========================================
+    // PART C: WISHLIST AND PACKAGE ENQUIRY
     // =========================================
-    // 5. WISHLIST / SAVE FAVOURITES
-    // =========================================
 
+    // 1. Wishlist functions
     const wishlistKey = "wanderly-favourites";
 
     function readWishlist() {
         try {
-            const data = JSON.parse(localStorage.getItem(wishlistKey));
+            const data = JSON.parse(
+                localStorage.getItem(wishlistKey) || "[]"
+            );
+
             return Array.isArray(data) ? data : [];
         } catch {
             return [];
@@ -369,27 +397,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function writeWishlist(items) {
         try {
-            localStorage.setItem(wishlistKey, JSON.stringify(items));
+            localStorage.setItem(
+                wishlistKey,
+                JSON.stringify(items)
+            );
+
             return true;
         } catch {
-            toast("Wishlist could not be saved in this browser.", "error");
+            toast(
+                "Wishlist could not be saved in this browser.",
+                "error"
+            );
+
             return false;
         }
     }
 
+    // 2. Add Save buttons to destination cards
     destinationCards.forEach(card => {
         const place = getPlaceFromCard(card);
+
         if (!place) return;
+
+        // Prevent duplicate buttons
+        if ($(".wishlist-btn", card)) return;
 
         const button = document.createElement("button");
         button.type = "button";
         button.className = "wishlist-btn";
-        button.setAttribute("aria-label", `Save ${place.name} to wishlist`);
+        button.setAttribute(
+            "aria-label",
+            `Save ${place.name} to wishlist`
+        );
 
         function updateButton() {
             const saved = readWishlist().includes(place.name);
+
             button.textContent = saved ? "♥ Saved" : "♡ Save";
             button.classList.toggle("is-saved", saved);
+            button.setAttribute(
+                "aria-pressed",
+                String(saved)
+            );
         }
 
         button.addEventListener("click", () => {
@@ -402,6 +451,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (writeWishlist(updated)) {
                 updateButton();
+
                 toast(
                     alreadySaved
                         ? `${place.name} removed from wishlist.`
@@ -414,19 +464,19 @@ document.addEventListener("DOMContentLoaded", () => {
         updateButton();
     });
 
-    // =========================================
-    // 6. PACKAGE DETAILS AND ENQUIRY
-    // =========================================
-
+    // 3. Package details popup
     packageCards.forEach(card => {
-        const title = $("h3", card)?.textContent.trim() || "Travel Package";
+        const title =
+            $("h3", card)?.textContent.trim() || "Travel Package";
+
         const place = destinations.find(item =>
             title.toLowerCase().includes(item.name.toLowerCase())
         );
 
-        const priceText = $("strong", card)?.textContent.trim() || "Contact us";
+        const priceText =
+            $("strong", card)?.textContent.trim() || "Contact us";
 
-        // Handle package links without real booking backend
+        // Handle links that currently have href="#"
         $$('a[href="#"]', card).forEach(link => {
             link.addEventListener("click", event => {
                 event.preventDefault();
@@ -446,6 +496,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     ? `Duration: ${place.duration}`
                     : "Please enquire for trip duration.";
 
+                const description = document.createElement("p");
+                description.textContent = place
+                    ? place.description
+                    : "Contact us to learn more about this package.";
+
                 const enquiryButton = document.createElement("button");
                 enquiryButton.type = "button";
                 enquiryButton.className = "modal-action-btn";
@@ -456,37 +511,45 @@ document.addEventListener("DOMContentLoaded", () => {
                     showEnquiryForm(title, priceText);
                 });
 
-                content.append(destination, price, duration, enquiryButton);
+                content.append(
+                    destination,
+                    price,
+                    duration,
+                    description,
+                    enquiryButton
+                );
+
                 openModal(title, content);
             });
         });
     });
 
+    // 4. Create enquiry form
     function showEnquiryForm(packageName, packagePrice) {
         const form = document.createElement("form");
         form.className = "enquiry-form";
 
         const fields = [
             {
-                label: "Your name",
+                label: "Your Name",
                 name: "name",
                 type: "text",
                 placeholder: "Enter your full name"
             },
             {
-                label: "Email address",
+                label: "Email Address",
                 name: "email",
                 type: "email",
-                placeholder: "Enter your email"
+                placeholder: "Enter your email address"
             },
             {
-                label: "Travel date",
+                label: "Travel Date",
                 name: "date",
                 type: "date",
                 placeholder: ""
             },
             {
-                label: "Number of travellers",
+                label: "Number of Travellers",
                 name: "travellers",
                 type: "number",
                 placeholder: "2"
@@ -503,6 +566,11 @@ document.addEventListener("DOMContentLoaded", () => {
             input.required = true;
             input.placeholder = field.placeholder;
 
+            if (field.name === "name") {
+                input.minLength = 2;
+                input.maxLength = 80;
+            }
+
             if (field.name === "travellers") {
                 input.min = "1";
                 input.max = "50";
@@ -510,12 +578,14 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             if (field.name === "date") {
-                const today = new Date();
-                const localToday = new Date(
-                    today.getTime() - today.getTimezoneOffset() * 60000
+                const now = new Date();
+
+                const today = new Date(
+                    now.getTime() -
+                    now.getTimezoneOffset() * 60000
                 ).toISOString().split("T")[0];
 
-                input.min = localToday;
+                input.min = today;
             }
 
             label.appendChild(input);
@@ -529,6 +599,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         form.appendChild(submit);
 
+        // 5. Validate and save enquiry
         form.addEventListener("submit", event => {
             event.preventDefault();
 
@@ -542,19 +613,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 name: values.get("name"),
                 email: values.get("email"),
                 date: values.get("date"),
-                travellers: values.get("travellers")
+                travellers: Number(values.get("travellers")),
+                submittedAt: new Date().toISOString()
             };
 
-            // Demo only: save locally in this browser.
             try {
-                const enquiries = JSON.parse(
+                const savedData = JSON.parse(
                     localStorage.getItem("wanderly-enquiries") || "[]"
                 );
 
-                enquiries.push({
-                    ...enquiry,
-                    submittedAt: new Date().toISOString()
-                });
+                const enquiries = Array.isArray(savedData)
+                    ? savedData
+                    : [];
+
+                enquiries.push(enquiry);
 
                 localStorage.setItem(
                     "wanderly-enquiries",
@@ -562,65 +634,484 @@ document.addEventListener("DOMContentLoaded", () => {
                 );
 
                 closeModal();
-                toast("Enquiry saved in this browser demo!");
+
+                toast(
+                    "Enquiry saved successfully in this browser demo!"
+                );
             } catch {
-                toast("Enquiry could not be saved. Please try again.", "error");
+                toast(
+                    "Enquiry could not be saved. Please try again.",
+                    "error"
+                );
             }
         });
 
         openModal("Plan Your Trip", form);
     }
+// PART D: MOBILE MENU, SMOOTH SCROLL AND BACK TO TOP
 
-    // =========================================
-    // 7. MOBILE NAVIGATION MENU
-    // =========================================
+// 1. Mobile navigation menu
+const navbar = $(".navbar");
+const navLinks = $(".nav-links");
 
-    const navbar = $(".navbar");
-    const navLinks = $(".nav-links", navbar || document);
+if (navbar && navLinks && !$(".menu-toggle", navbar)) {
+    const menuButton = document.createElement("button");
 
-    if (navbar && navLinks) {
-        let menuButton = $(".menu-toggle", navbar);
+    menuButton.type = "button";
+    menuButton.className = "menu-toggle";
+    menuButton.textContent = "☰";
+    menuButton.setAttribute("aria-label", "Open navigation menu");
+    menuButton.setAttribute("aria-expanded", "false");
 
-        if (!menuButton) {
-            menuButton = document.createElement("button");
-            menuButton.type = "button";
-            menuButton.className = "menu-toggle";
+    navbar.insertBefore(menuButton, navLinks);
+
+    menuButton.addEventListener("click", () => {
+        const isOpen = navLinks.classList.toggle("menu-open");
+
+        menuButton.textContent = isOpen ? "✕" : "☰";
+        menuButton.setAttribute("aria-expanded", String(isOpen));
+        menuButton.setAttribute(
+            "aria-label",
+            isOpen ? "Close navigation menu" : "Open navigation menu"
+        );
+    });
+
+    // Close menu after clicking a navigation link
+    $$("a", navLinks).forEach(link => {
+        link.addEventListener("click", () => {
+            navLinks.classList.remove("menu-open");
             menuButton.textContent = "☰";
-            menuButton.setAttribute("aria-label", "Toggle navigation");
             menuButton.setAttribute("aria-expanded", "false");
+            menuButton.setAttribute("aria-label", "Open navigation menu");
+        });
+    });
+}
 
-            navbar.insertBefore(menuButton, navLinks);
+// 2. Smooth scrolling for internal links
+$$('a[href^="#"]').forEach(link => {
+    link.addEventListener("click", event => {
+        const targetId = link.getAttribute("href");
+
+        // Ignore empty links and placeholder links
+        if (!targetId || targetId === "#") {
+            return;
         }
 
-        menuButton.addEventListener("click", () => {
-            const open = navLinks.classList.toggle("menu-open");
+        const target = $(targetId);
 
-            menuButton.textContent = open ? "✕" : "☰";
-            menuButton.setAttribute("aria-expanded", String(open));
-        });
-
-        $$("a", navLinks).forEach(link => {
-            link.addEventListener("click", () => {
-                navLinks.classList.remove("menu-open");
-                menuButton.textContent = "☰";
-                menuButton.setAttribute("aria-expanded", "false");
+        if (target) {
+            event.preventDefault();
+            target.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
             });
+
+            // Update the URL hash without an abrupt jump
+            if (window.location.hash !== targetId) {
+                history.replaceState(null, "", targetId);
+            }
+        }
+    });
+});
+
+// 3. Back-to-top button visibility
+const backToTop = $(".back-to-top");
+
+if (backToTop) {
+    const updateBackToTop = () => {
+        backToTop.classList.toggle(
+            "is-visible",
+            window.scrollY > 300
+        );
+    };
+
+    window.addEventListener("scroll", updateBackToTop, {
+        passive: true
+    });
+
+    updateBackToTop();
+}
+
+// 4. Current year in footer, if a year placeholder exists
+const yearElement = $("#current-year");
+
+if (yearElement) {
+    yearElement.textContent = new Date().getFullYear();
+}
+// PART E: CONTACT FORM, NEWSLETTER AND FINAL SETUP
+
+// 1. Contact form validation
+const contactForm = $("#contact-form");
+
+if (contactForm) {
+    contactForm.addEventListener("submit", event => {
+        event.preventDefault();
+
+        if (!contactForm.reportValidity()) {
+            return;
+        }
+
+        toast(
+            "Form validated successfully! Connect a backend to send your message."
+        );
+
+        contactForm.reset();
+    });
+}
+
+// 2. Newsletter subscription
+const newsletterForm = $("#newsletter-form");
+
+if (newsletterForm) {
+    newsletterForm.addEventListener("submit", event => {
+        event.preventDefault();
+
+        if (!newsletterForm.reportValidity()) {
+            return;
+        }
+
+        const emailInput = $('input[type="email"]', newsletterForm);
+        const email = emailInput?.value.trim();
+
+        if (!email) {
+            toast("Please enter a valid email address.", "error");
+            return;
+        }
+
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailPattern.test(email)) {
+            toast("Please enter a valid email address.", "error");
+            return;
+        }
+
+        try {
+            const saved = JSON.parse(
+                localStorage.getItem("wanderly-newsletter") || "[]"
+            );
+
+            const subscribers = Array.isArray(saved) ? saved : [];
+
+            if (
+                subscribers.some(
+                    item => item.toLowerCase() === email.toLowerCase()
+                )
+            ) {
+                toast("This email is already subscribed.");
+                return;
+            }
+
+            subscribers.push(email);
+
+            localStorage.setItem(
+                "wanderly-newsletter",
+                JSON.stringify(subscribers)
+            );
+
+            toast("Newsletter subscription saved successfully!");
+            newsletterForm.reset();
+        } catch {
+            toast("Could not save your subscription.", "error");
+        }
+    });
+}
+
+// 3. Footer: display current year
+const footerYear = $("#current-year");
+
+if (footerYear) {
+    footerYear.textContent = new Date().getFullYear();
+}
+
+// 4. Show a welcome message in the console
+console.log("Welcome to Wanderly - Travel & Tourism Website!");
+console.log("JavaScript loaded successfully.");
+// PART F: ADVANCED BOOKING SYSTEM
+
+// 1. Create a button to open the booking form
+const bookingButton = document.createElement("button");
+
+bookingButton.type = "button";
+bookingButton.className = "booking-btn";
+bookingButton.textContent = "Book Your Trip";
+
+const heroSearch = $(".hero-search");
+
+if (heroSearch && !$(".booking-btn", heroSearch)) {
+    heroSearch.appendChild(bookingButton);
+}
+
+// 2. Create a unique demo booking ID
+function createBookingId() {
+    return "WRL-" + Date.now().toString(36).toUpperCase();
+}
+
+// 3. Open booking form
+function openBookingForm(selectedDestination = "") {
+    const form = document.createElement("form");
+    form.className = "booking-form";
+
+    const destinationLabel = document.createElement("label");
+    destinationLabel.textContent = "Choose Destination";
+
+    const destinationSelect = document.createElement("select");
+    destinationSelect.name = "destination";
+    destinationSelect.required = true;
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Select a destination";
+    destinationSelect.appendChild(placeholder);
+
+    destinations.forEach(place => {
+        const option = document.createElement("option");
+        option.value = place.name;
+        option.textContent = place.name;
+
+        if (
+            place.name.toLowerCase() ===
+            selectedDestination.toLowerCase()
+        ) {
+            option.selected = true;
+        }
+
+        destinationSelect.appendChild(option);
+    });
+
+    destinationLabel.appendChild(destinationSelect);
+
+    const dateLabel = document.createElement("label");
+    dateLabel.textContent = "Travel Date";
+
+    const dateInput = document.createElement("input");
+    dateInput.type = "date";
+    dateInput.name = "travelDate";
+    dateInput.required = true;
+
+    const today = new Date();
+    dateInput.min = new Date(
+        today.getTime() - today.getTimezoneOffset() * 60000
+    ).toISOString().split("T")[0];
+
+    dateLabel.appendChild(dateInput);
+
+    const travellersLabel = document.createElement("label");
+    travellersLabel.textContent = "Number of Travellers";
+
+    const travellersInput = document.createElement("input");
+    travellersInput.type = "number";
+    travellersInput.name = "travellers";
+    travellersInput.min = "1";
+    travellersInput.max = "50";
+    travellersInput.value = "2";
+    travellersInput.required = true;
+
+    travellersLabel.appendChild(travellersInput);
+
+    const nameLabel = document.createElement("label");
+    nameLabel.textContent = "Full Name";
+
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.name = "name";
+    nameInput.minLength = 2;
+    nameInput.maxLength = 80;
+    nameInput.placeholder = "Enter your full name";
+    nameInput.required = true;
+
+    nameLabel.appendChild(nameInput);
+
+    const emailLabel = document.createElement("label");
+    emailLabel.textContent = "Email Address";
+
+    const emailInput = document.createElement("input");
+    emailInput.type = "email";
+    emailInput.name = "email";
+    emailInput.placeholder = "Enter your email";
+    emailInput.required = true;
+
+    emailLabel.appendChild(emailInput);
+
+    const submitButton = document.createElement("button");
+    submitButton.type = "submit";
+    submitButton.className = "modal-action-btn";
+    submitButton.textContent = "Confirm Demo Booking";
+
+    form.append(
+        destinationLabel,
+        dateLabel,
+        travellersLabel,
+        nameLabel,
+        emailLabel,
+        submitButton
+    );
+
+    form.addEventListener("submit", event => {
+        event.preventDefault();
+
+        if (!form.reportValidity()) {
+            return;
+        }
+
+        const formData = new FormData(form);
+        const destinationName = formData.get("destination");
+        const selectedPlace = destinations.find(
+            place => place.name === destinationName
+        );
+
+        if (!selectedPlace) {
+            toast("Please select a valid destination.", "error");
+            return;
+        }
+
+        const booking = {
+            id: createBookingId(),
+            destination: selectedPlace.name,
+            travelDate: formData.get("travelDate"),
+            travellers: Number(formData.get("travellers")),
+            name: formData.get("name").trim(),
+            email: formData.get("email").trim(),
+            estimatedPrice: selectedPlace.price *
+                Number(formData.get("travellers")),
+            status: "Demo booking saved",
+            createdAt: new Date().toISOString()
+        };
+
+        try {
+            const saved = JSON.parse(
+                localStorage.getItem("wanderly-bookings") || "[]"
+            );
+
+            const bookings = Array.isArray(saved) ? saved : [];
+            bookings.push(booking);
+
+            localStorage.setItem(
+                "wanderly-bookings",
+                JSON.stringify(bookings)
+            );
+
+            const confirmation = document.createElement("div");
+
+            const heading = document.createElement("h3");
+            heading.textContent = "Booking Details Saved!";
+
+            const details = document.createElement("p");
+            details.textContent =
+                `Booking ID: ${booking.id}`;
+
+            const destination = document.createElement("p");
+            destination.textContent =
+                `Destination: ${booking.destination}`;
+
+            const date = document.createElement("p");
+            date.textContent =
+                `Travel Date: ${booking.travelDate}`;
+
+            const people = document.createElement("p");
+            people.textContent =
+                `Travellers: ${booking.travellers}`;
+
+            const price = document.createElement("p");
+            price.textContent =
+                `Estimated Total: ₹${booking.estimatedPrice.toLocaleString("en-IN")}`;
+
+            const note = document.createElement("p");
+            note.textContent =
+                "This is a demo booking. No payment or actual reservation has been made.";
+
+            confirmation.append(
+                heading,
+                details,
+                destination,
+                date,
+                people,
+                price,
+                note
+            );
+
+            openModal("Booking Confirmation", confirmation);
+        } catch {
+            toast(
+                "Could not save booking. Browser storage may be unavailable.",
+                "error"
+            );
+        }
+    });
+
+    openModal("Book Your Trip", form);
+}
+
+bookingButton.addEventListener("click", () => {
+    openBookingForm();
+});
+
+// 4. Add a button to view saved wishlist destinations
+const wishlistViewButton = document.createElement("button");
+
+wishlistViewButton.type = "button";
+wishlistViewButton.className = "wishlist-view-btn";
+wishlistViewButton.textContent = "View Wishlist";
+
+const navbarElement = $(".navbar");
+
+if (navbarElement && !$(".wishlist-view-btn", navbarElement)) {
+    navbarElement.appendChild(wishlistViewButton);
+}
+
+wishlistViewButton.addEventListener("click", () => {
+    let savedNames = [];
+
+    try {
+        const saved = JSON.parse(
+            localStorage.getItem("wanderly-favourites") || "[]"
+        );
+
+        savedNames = Array.isArray(saved) ? saved : [];
+    } catch {
+        toast("Could not read your wishlist.", "error");
+        return;
+    }
+
+    const list = document.createElement("div");
+
+    const heading = document.createElement("h3");
+    heading.textContent = "Your Saved Destinations";
+    list.appendChild(heading);
+
+    if (savedNames.length === 0) {
+        const message = document.createElement("p");
+        message.textContent =
+            "Your wishlist is empty. Use the Save button on a destination card.";
+        list.appendChild(message);
+    } else {
+        savedNames.forEach(name => {
+            const place = destinations.find(
+                item => item.name === name
+            );
+
+            if (!place) return;
+
+            const item = document.createElement("div");
+            item.className = "wishlist-item";
+
+            const title = document.createElement("p");
+            title.textContent = `${place.name} — ₹${place.price.toLocaleString("en-IN")} per person`;
+
+            const bookButton = document.createElement("button");
+            bookButton.type = "button";
+            bookButton.textContent = "Book This Trip";
+            bookButton.className = "modal-action-btn";
+
+            bookButton.addEventListener("click", () => {
+                closeModal();
+                openBookingForm(place.name);
+            });
+
+            item.append(title, bookButton);
+            list.appendChild(item);
         });
     }
 
-    // =========================================
-    // 8. SMOOTH SCROLL FOR INTERNAL LINKS
-    // =========================================
-
-    $$('a[href^="#"]').forEach(link => {
-        link.addEventListener("click", event => {
-            const href = link.getAttribute("href");
-
-            if (!href || href === "#") return;
-
-            const target = $(href);
-
-            if (target) {
-                event.preventDefault();
-                target.scrollIntoView({
-                    beha
+    openModal("My Wishlist", list);
+});
+});
